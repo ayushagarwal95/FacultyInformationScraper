@@ -9,20 +9,28 @@ import sys, getopt
 from clint.textui import colored, puts
 from clint import arguments
 import os
-
+import ssl
 
 facultyInfo = []
 
+REGNO = ''
+PASSWORD = ''
 
 def login():
-    REGNO = ''
-    PASSWORD = ''
     br = mechanize.Browser()
+    br.set_handle_robots(False)
     br.set_handle_redirect(True)
     br.set_handle_referer(True)
+    try:
+        _create_unverified_https_context = ssl._create_unverified_context
+    except AttributeError:
+        pass
+    else:
+        ssl._create_default_https_context = _create_unverified_https_context
     cj = cookielib.CookieJar()
     br.set_cookiejar(cj)
     response = br.open('https://vtop.vit.ac.in/student/stud_login.asp')
+    print 'Opened Login Form'
     html = response.read()
     soup = BeautifulSoup(html)
     im = soup.find('img', id='imgCaptcha')
@@ -34,7 +42,11 @@ def login():
     br.form['regno'] = REGNO
     br.form['passwd'] = PASSWORD
     br.form['vrfcd'] = str(captcha)
+    print br.form
+    print str(captcha) + ' Captcha Parsed'
     br.submit()
+    print br
+    print 'Submitted'
     if (br.geturl() == 'https://vtop.vit.ac.in/student/home.asp'):
         puts(colored.yellow("LOGIN SUCCESSFUL"))
         return br
@@ -91,7 +103,7 @@ def parseFacultyPage(br, facultyID):
 
 def aggregate():
     br = login()
-    for i in range(10020, 20000, 1):
+    for i in range(10000, 20000, 1):
         result = parseFacultyPage(br, i)
         if (result is not None):
             puts(colored.green("Parsed FacultyID = " + str(i)))
@@ -105,13 +117,9 @@ def aggregate():
 
 if __name__ == '__main__':
     print "-" * 40
-    puts(colored.white(" " * 15 + "Faculty Information Scrapper"))
+    puts(colored.white(" " * 15 + "Faculty Information Scraper"))
     print "-" * 40
     args = arguments.Args()
-    REGNO = args.get(0)
-    PASSWORD = args.get(1)
-    try:
-        aggregate()
-    except Exception, e:
-        if e.code==403:
-            print 'Disallowed to access the page. Please check your internet connection.'
+    REGNO = str(args.get(0))
+    PASSWORD = str(args.get(1))
+    aggregate()
