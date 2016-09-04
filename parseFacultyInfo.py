@@ -95,7 +95,7 @@ def parseFacultyPage(br, facultyID):
     outputPath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'output')
     if os.path.isdir(outputPath) is False:
         os.makedirs(outputPath)
-    result = {'empid': facultyID, 'name': name, 'school': school, 'designation': designation, 'room': room, 'intercom': intercom, 'email': email, 'division': division, 'open_hours': openHours}
+    result = {'_id': facultyID, 'name': name, 'school': school, 'designation': designation, 'room': room, 'intercom': intercom, 'email': email, 'division': division, 'open_hours': openHours}
     with open('output/' + str(facultyID) + '.json', 'w') as outfile:
         json.dump(result, outfile,indent=4)
     return result
